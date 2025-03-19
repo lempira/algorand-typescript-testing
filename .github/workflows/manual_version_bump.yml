@@ -1,0 +1,52 @@
+name: Manual Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Target version (e.g., 500.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Create and push version tag
+        run: |
+          if ! [[ ${{ inputs.version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be in semantic versioning format (X.Y.Z)"
+            exit 1
+          fi
+          MAJOR_VERSION=$(echo "${{ inputs.version }}" | cut -d. -f1)
+          PREV_MAJOR=$(expr $MAJOR_VERSION - 1)
+          PREV_VERSION="${PREV_MAJOR}.0.0"
+          echo "PREV_VERSION: $PREV_VERSION"
+          git tag -a "v${PREV_VERSION}" -m "Version ${PREV_VERSION}"
+          git push origin "v${PREV_VERSION}"
+
+      - name: Create empty commit for version bump
+        run: |
+          git commit --allow-empty -m "fix!: bumping major version ${{ inputs.version }}"
+          git push origin main
+
+      - name: Trigger prod release workflow
+        run: |
+          gh workflow run "Publish" --ref main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

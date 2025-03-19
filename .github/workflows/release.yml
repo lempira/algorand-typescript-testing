@@ -58,9 +58,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish @algorandfoundation/algorand-typescript-testing
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: artifacts/algo-ts-testing/package.json
-          access: 'public'
+      # - name: Publish @algorandfoundation/algorand-typescript-testing
+      #   uses: JS-DevTools/npm-publish@v3
+      #   with:
+      #     token: ${{ secrets.NPM_TOKEN }}
+      #     package: artifacts/algo-ts-testing/package.json
+      #     access: 'public'
